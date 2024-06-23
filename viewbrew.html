@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brewery Details</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-image: url('C:/Users/VivekMurali/OneDrive/Documents/BRS/images/home.jpg');
+        }
+
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 15px;
+            padding: 40px;
+            width: 90%;
+            margin: 20px auto;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .brewery-details {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .brewery-detail {
+            border-bottom: 1px solid #ccc;
+            padding: 10px 0;
+        }
+
+        .brewery-detail:last-child {
+            border-bottom: none;
+        }
+
+        .brewery-detail label {
+            font-weight: bold;
+        }
+
+        .review-form {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+        }
+
+        .review-form input[type="text"],
+        .review-form select,
+        .review-form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        .review-form input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .review-form input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .success-message {
+            color: #4CAF50;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Brewery Details</h1>
+        <ul class="brewery-details">
+            <li class="brewery-detail">
+                <label for="brewery-name">Brewery Name:</label>
+                <span id="brewery-name"></span>
+            </li>
+            <li class="brewery-detail">
+                <label for="brewery-address">Address:</label>
+                <span id="brewery-address"></span>
+            </li>
+            <li class="brewery-detail">
+                <label for="brewery-phone">Phone:</label>
+                <span id="brewery-phone"></span>
+            </li>
+            <li class="brewery-detail">
+                <label for="brewery-website">Website:</label>
+                <span id="brewery-website"></span>
+            </li>
+            <li class="brewery-detail">
+                <label for="brewery-rating">Rating:</label>
+                <span id="brewery-rating"></span>
+            </li>
+            <li class="brewery-detail">
+                <label for="brewery-reviews">Reviews:</label>
+                <span id="brewery-reviews"></span>
+            </li>
+        </ul>
+
+        <div class="review-form">
+            <h2>Write a Review</h2>
+            <form id="review-form">
+                <input type="text" id="reviewer-name" name="reviewer-name" placeholder="Your Name" required><br>
+                <select id="rating" name="rating" required>
+                    <option value="">Select Rating</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select><br>
+                <textarea id="review-text" name="review-text" placeholder="Write your review here..." required></textarea><br>
+                <input type="submit" value="Submit Review">
+            </form>
+            <div class="success-message" id="success-message"></div>
+
+            <div class="reviews-section">
+                <h2>Reviews</h2>
+                <ul id="review-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const breweryName = urlParams.get('brewery');
+            if (breweryName) {
+                fetchBreweryDetails(breweryName);
+            }
+    
+            var reviewForm = document.getElementById('review-form');
+            var successMessage = document.getElementById('success-message');
+    
+            reviewForm.addEventListener('submit', async function(event) {
+                event.preventDefault(); 
+    
+                const formData = new FormData(reviewForm);
+                try {
+                    const response = await fetch('http://localhost:3003/submit-review', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (response.ok) {
+                        successMessage.textContent = 'Review submitted successfully!';
+                        reviewForm.reset(); 
+                        fetchBreweryDetails(breweryName); 
+                    } else {
+                        console.error('Failed to submit review:', response.statusText);
+                        successMessage.textContent = 'Failed to submit review';
+                    }
+                } catch (error) {
+                    console.error('Error submitting review:', error);
+                    successMessage.textContent = 'Error submitting review';
+                }
+            });
+        });
+    
+        async function fetchBreweryDetails(name) {
+            try {
+                const response = await fetch(`http://localhost:3003/brewery?name=${encodeURIComponent(name)}`);
+                const data = await response.json();
+    
+                document.getElementById('brewery-name').textContent = data.name || 'N/A';
+                document.getElementById('brewery-address').textContent = data.address || 'N/A';
+                document.getElementById('brewery-phone').textContent = data.phone || 'N/A';
+                document.getElementById('brewery-website').innerHTML = data.website ? `<a href="${data.website}" target="_blank">${data.website}</a>` : 'N/A';
+                document.getElementById('brewery-rating').textContent = data.rating || 'N/A';
+                document.getElementById('brewery-reviews').textContent = data.reviews || 'N/A';
+            } catch (error) {
+                console.error('Error fetching brewery details:', error);
+            }
+        }
+
+        async function fetchReviews(breweryName) {
+    try {
+        const response = await fetch(`http://localhost:3003/reviews?brewery=${encodeURIComponent(breweryName)}`);
+        const reviews = await response.json();
+        const reviewList = document.getElementById('review-list');
+
+        reviewList.innerHTML = ''; 
+
+        reviews.forEach(review => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${review.reviewerName}: ${review.rating}/5 - ${review.reviewText}`;
+            reviewList.appendChild(listItem);
+        });
+    } catch (error) {
+        console.error('Error fetching reviews:', error);
+    }
+}
+
+    </script>
+    
+</body>
+</html>

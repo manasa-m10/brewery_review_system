@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Breweries</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url('C:/Users/VivekMurali/OneDrive/Documents/BRS/images/home.jpg');
+            background-size: cover;
+            background-position: center;
+            color: #333;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 40px;
+            padding: 40px;
+            width: 1000px;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
+            margin-top: 20px;
+            box-sizing: border-box;
+            overflow: hidden; 
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .brewery-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto; 
+            max-height: 400px; 
+        }
+
+        .brewery-item {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s, background-color 0.3s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .brewery-item:hover {
+            background-color: #f0f0f0;
+            transform: scale(1.02);
+        }
+
+        .brewery-info {
+            text-align: left;
+        }
+
+        .brewery-name {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .brewery-name a {
+            text-decoration: none;
+            color: #444b52; 
+        }
+
+        .brewery-name a:hover {
+            text-decoration: underline;
+        }
+
+        .brewery-details {
+            font-size: 14px;
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+
+        .brewery-rating {
+            font-size: 18px;
+            color: #4CAF50;
+        }
+
+        .pagination {
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .pagination button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .pagination button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>View Breweries</h1>
+        <ul class="brewery-list" id="brewery-list">
+        </ul>
+        <div class="pagination" id="pagination">
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const perPage = 10; 
+            let currentPage = 1; 
+
+            const response = await fetch('https://api.openbrewerydb.org/breweries');
+            const breweries = await response.json();
+            const totalBreweries = breweries.length;
+            const totalPages = Math.ceil(totalBreweries / perPage);
+
+            const breweryList = document.getElementById('brewery-list');
+            const pagination = document.getElementById('pagination');
+
+            function displayBreweries() {
+                breweryList.innerHTML = '';
+
+                const startIndex = (currentPage - 1) * perPage;
+                const endIndex = Math.min(startIndex + perPage, totalBreweries);
+
+                for (let i = startIndex; i < endIndex; i++) {
+                    const brewery = breweries[i];
+                    const listItem = document.createElement('li');
+                    listItem.classList.add('brewery-item');
+
+                    const breweryInfo = document.createElement('div');
+                    breweryInfo.classList.add('brewery-info');
+
+                    const breweryName = document.createElement('h2');
+                    breweryName.classList.add('brewery-name');
+                    const breweryLink = document.createElement('a');
+                    breweryLink.href = `view.html?brewery=${encodeURIComponent(brewery.name)}`;
+                    breweryLink.textContent = brewery.name;
+                    breweryName.appendChild(breweryLink);
+
+                    const breweryDetails = document.createElement('p');
+                    breweryDetails.classList.add('brewery-details');
+                    breweryDetails.textContent = `${brewery.city}, ${brewery.brewery_type}`;
+
+                    breweryInfo.appendChild(breweryName);
+                    breweryInfo.appendChild(breweryDetails);
+
+                    const breweryRating = document.createElement('div');
+                    breweryRating.classList.add('brewery-rating');
+                    breweryRating.textContent = 'Rating: N/A';
+
+                    listItem.appendChild(breweryInfo);
+                    listItem.appendChild(breweryRating);
+
+                    breweryList.appendChild(listItem);
+                }
+
+                updatePagination();
+            }
+
+            function updatePagination() {
+                pagination.innerHTML = '';
+
+                if (currentPage > 1) {
+                    const prevButton = createPaginationButton('Prev', currentPage - 1);
+                    pagination.appendChild(prevButton);
+                }
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageButton = createPaginationButton(i, i);
+                    pagination.appendChild(pageButton);
+                }
+
+                if (currentPage < totalPages) {
+                    const nextButton = createPaginationButton('Next', currentPage + 1);
+                    pagination.appendChild(nextButton);
+                }
+            }
+
+            function createPaginationButton(text, page) {
+                const button = document.createElement('button');
+                button.textContent = text;
+                button.addEventListener('click', () => {
+                    currentPage = page;
+                    displayBreweries();
+                });
+                return button;
+            }
+
+            displayBreweries();
+        });
+    </script>
+</body>
+</html>

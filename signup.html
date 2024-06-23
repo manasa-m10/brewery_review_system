@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup Page</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background: url('C:/Users/VivekMurali/OneDrive/Documents/BRS/images/login.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .signup-box {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            width: 350px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .signup-box h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .signup-box label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .signup-box input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .signup-box input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .signup-box input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .error {
+            color: red;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-box">
+        <h2>Signup</h2>
+        <form id="signupForm">
+            <label for="name">Name*</label>
+            <input type="text" id="name" name="name" required>
+            <label for="username">Username*</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password*</label>
+            <input type="password" id="password" name="password" required>
+            <label for="confirm-password">Confirm Password*</label>
+            <input type="password" id="confirm-password" name="confirm-password" required>
+            <input type="submit" value="Signup">
+            <div class="error" id="passwordError">Password must contain a minimum of 8 characters, at least one uppercase letter, one lowercase letter, one number, and one special character.</div>
+            <div class="error" id="confirmPasswordError">Passwords do not match.</div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            var name = document.getElementById('name').value;
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+            var confirmPassword = document.getElementById('confirm-password').value;
+            var passwordError = document.getElementById('passwordError');
+            var confirmPasswordError = document.getElementById('confirmPasswordError');
+
+            passwordError.style.display = 'none';
+            confirmPasswordError.style.display = 'none';
+
+            var passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+            if (!passwordRegex.test(password)) {
+                passwordError.style.display = 'block';
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                confirmPasswordError.style.display = 'block';
+                return;
+            }
+
+            var formData = {
+                name: name,
+                username: username,
+                password: password
+            };
+
+            var formDataString = JSON.stringify(formData);
+            document.getElementById('formDataDisplay').innerText = formDataString;
+
+            
+                console.log('Data to send:', { name, username, password });
+                const response = await fetch('http://localhost:3001/signup', {
+                    method: 'POST',
+                    headers: {  
+                        'Content-Type': 'application/json'
+                    },
+
+                    body: formDataString
+                });
+                if (response.ok) {
+                    alert('Signup successful');
+                } else {
+                    alert('Error signing up1');
+                }
+            
+        });
+    </script>
+
+<div id="formDataDisplay"></div>
+
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Breweries</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: url('C:/Users/VivekMurali/OneDrive/Documents/BRS/images/home.jpg');
+            background-size: cover;
+            background-position: center;
+            color: #333;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 40px;
+            width: 90%;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
+            margin-top: 20px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .search-options {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 40px;
+        }
+
+        .option {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            width: 30%;
+            text-align: center;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            margin: 0 10px;
+        }
+
+        .option:hover {
+            transform: scale(1.05);
+        }
+
+        .option-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .option-text {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .search-box button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        .search-box button:hover {
+            background-color: #45a049;
+        }
+
+        .results {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .result-item {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
+        }
+
+        .result-item h2 {
+            margin: 0 0 10px 0;
+        }
+
+        .result-item p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Search Breweries</h1>
+        <div class="search-options">
+            <div class="option">
+                <div class="option-icon">🔍</div>
+                <div class="option-text">Search by Name</div>
+                <div class="search-box">
+                    <input type="text" id="searchName" placeholder="Enter brewery name">
+                    <button onclick="search('name')">Search</button>
+                </div>
+            </div>
+            <div class="option">
+                <div class="option-icon">📍</div>
+                <div class="option-text">Search by City</div>
+                <div class="search-box">
+                    <input type="text" id="searchCity" placeholder="Enter city name">
+                    <button onclick="search('city')">Search</button>
+                </div>
+            </div>
+            <div class="option">
+                <div class="option-icon">🍺</div>
+                <div class="option-text">Search by Type</div>
+                <div class="search-box">
+                    <input type="text" id="searchType" placeholder="Enter brewery type">
+                    <button onclick="search('type')">Search</button>
+                </div>
+            </div>
+        </div>
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        function search(type) {
+            const userInput = document.getElementById(`search${type.charAt(0).toUpperCase() + type.slice(1)}`).value.trim();
+            if (userInput) {
+                fetchResults(type, userInput);
+            } else {
+                alert('Please enter a search query');
+            }
+        }
+
+        async function fetchResults(type, query) {
+            const requestUrl = `http://localhost:3002/search?${type}=${query}`;
+            console.log('Sending request to:', requestUrl);  
+            try {
+                const response = await fetch(requestUrl);
+                const data = await response.json();
+                console.log('Received response:', data); 
+                displayResults(data);
+            } catch (error) {
+                console.error('Error fetching results:', error);
+            }
+        }
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            if (data.length > 0) {
+                data.forEach(item => {
+                    const resultItem = document.createElement('div');
+                    resultItem.classList.add('result-item');
+                    resultItem.innerHTML = `
+                        <h2><a href="viewbrew.html?brewery=${encodeURIComponent(item.name)}">${item.name}</a></h2>
+                        <p><strong>City:</strong> ${item.city}</p>
+                        <p><strong>Type:</strong> ${item.brewery_type}</p>
+                    `;
+                    resultsDiv.appendChild(resultItem);
+                });
+            } else {
+                resultsDiv.innerHTML = '<p>No results found</p>';
+            }
+        }
+    </script>
+</body>
+</html>
